@@ -10,7 +10,7 @@ def main():
     parser.add_argument("-a", "--address", help="specify the address of the login page", required=True)
     args = parser.parse_args()
     address = args.address
-    global address
+    global address #make the accesible from anywhere
     opener(args.usernames, args.passwords)
 
 #opener: u gussed it as the name implies open a list of usernames and passwords
