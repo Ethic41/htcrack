@@ -9,8 +9,8 @@ def main():
     parser.add_argument("-p", "--passwords", help="specify a file containing list of passwords", required=True, type=file)
     parser.add_argument("-a", "--address", help="specify the address of the login page", required=True)
     args = parser.parse_args()
-    address = args.address
     global address #make the accesible from anywhere
+    address = args.address
     opener(args.usernames, args.passwords)
 
 #opener: u gussed it as the name implies open a list of usernames and passwords
@@ -38,7 +38,7 @@ def checker(user, psswd):
     payloads = {"user":user, "pwd":psswd}
     with request.Session() as s:
         page = s.post(address,data=payloads)
-    if #some conditions:
+    if page == True:
         return True
     else:
         return False
