@@ -27,6 +27,7 @@ def opener(user_list, pass_list):
 #this function try all the combination of usernames and password in the
 #supplied dictionaries(of usernames and passwords)
 def cracker(usernames, passwords):
+    count = 0
     with open(os.getcwd()+"/cracked_cred.dmd", "a") as f:
         print("Cracking...")
         for psswds in passwords:
@@ -39,6 +40,10 @@ def cracker(usernames, passwords):
                     f.write(user+"::"+psswds+"\n")
                     print("found password for "+user+" ==> "+psswds)
                     usernames.remove(users)
+                if count == 20:
+                    print("trying user: "+user+" with password: "+psswds)
+                    count = 0
+                count +=1
     print("Exhausted the list of passwords")
 
 
